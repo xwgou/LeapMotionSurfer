@@ -16,22 +16,20 @@
 
 package de.mfo.jsurf;
 
+
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.*;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.OutputStream;
 import java.util.Properties;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.cli.*;
 
+
+import de.mfo.jsurf.gui.JSurferRenderPanel;
 import de.mfo.jsurf.rendering.cpu.AntiAliasingPattern;
 import de.mfo.jsurf.rendering.cpu.CPUAlgebraicSurfaceRenderer;
 import de.mfo.jsurf.rendering.cpu.CPUAlgebraicSurfaceRenderer.AntiAliasingMode;
@@ -39,9 +37,11 @@ import de.mfo.jsurf.util.FileFormat;
 
 public class Main {	
 	
-    static int size = 100;
+    static int size = 800;
     static AntiAliasingMode aam;
     static AntiAliasingPattern aap;
+    
+    
     
     static CPUAlgebraicSurfaceRenderer asr = new CPUAlgebraicSurfaceRenderer();
 
@@ -71,8 +71,6 @@ public class Main {
 	public static void main(String[] args) {  
 		
     	String jsurf_filename = "";
-    	String output_filename = null;
-    	
     	Options options = new Options();
     	
     	options.addOption("s","size", true, "width (and height) of a image (default: " + size + ")");
@@ -97,8 +95,8 @@ public class Main {
     			return;
     		}
     		
-    		if( cmd.hasOption( "output" ) )
-    			output_filename = cmd.getOptionValue("output");
+    		if( cmd.hasOption( "output" ) ) {
+			}
     		
     		if( cmd.hasOption("size") )
     			size = Integer.parseInt( cmd.getOptionValue("size") );
@@ -135,9 +133,9 @@ public class Main {
     		System.exit( -1 );
     	}
     	
+    	final Properties jsurf = new Properties();
     	try
     	{
-    		Properties jsurf = new Properties();
     		if( jsurf_filename.equals( "-" ) )
     			jsurf.load( System.in );
     		else
@@ -154,58 +152,32 @@ public class Main {
     	asr.setAntiAliasingMode( aam );
     	asr.setAntiAliasingPattern( aap );
     	
-    	BufferedImage bi = null;
-        try
-        {
-        	ImgBuffer ib = new ImgBuffer( size, size );
-            asr.draw( ib.rgbBuffer, size, size );
-        	bi = flipV( createBufferedImageFromRGB( ib ) );
-        	
-        }
-        catch( Exception e )
-        {
-        	System.err.println( "An error occurred during rendering." );
-    		e.printStackTrace();
-    		System.exit( -3 );
-        }
-        
-    	if( output_filename != null )
-    	{
-    		// save to file
-    		try
-    		{
-    			OutputStream os;
-    			if( output_filename.equals( "-" ) )
-    				os = System.out;
-    			else
-    				os = new FileOutputStream( new File( output_filename ) );
-    			javax.imageio.ImageIO.write( bi, "png", os );
-    		}
-    		catch( Exception e )
-    		{
-    			System.err.println( "Unable to save to file  " + output_filename  );
-        		e.printStackTrace();
-        		System.exit( -4 );
-    		}
-    	}
-    	else
-    	{
+    	
     		// display the image in a window 
-    		final String window_title = "jsurf: " + jsurf_filename;
-    		final BufferedImage window_image = bi;
-    		SwingUtilities.invokeLater( new Runnable() {
-    			public void run()
-    			{
-    				JFrame f = new JFrame( window_title );
-    				f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-    				f.getContentPane().add( new JLabel( new ImageIcon( window_image ) ) );
-    				f.pack();
-    				f.setResizable( false );
-    				f.setVisible( true );
+    	final String window_title = "jsurf: " + jsurf_filename;
+    	SwingUtilities.invokeLater( new Runnable() {
+    		public void run()
+    		{
+    			JFrame f = new JFrame( window_title );
+    			f.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+    			JSurferRenderPanel p = null;
+    			try {
+    				p = new JSurferRenderPanel(jsurf);
+    			} catch (Exception e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
     			}
-    		});
-    	}
+    			
+    			f.setContentPane(p);
+    			
+    			//    				f.getContentPane().add( new JLabel( new ImageIcon( window_image ) ) );
+    			f.pack();
+    			//    				f.setResizable( false );
+    			f.setVisible( true );
+    		}
+    	});
 	}
+
 }
 
 

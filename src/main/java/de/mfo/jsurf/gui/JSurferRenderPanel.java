@@ -13,6 +13,8 @@ import javax.swing.*;
 import java.awt.image.*;
 import javax.vecmath.*;
 
+import com.leapmotion.leap.Controller;
+
 // input/output
 import java.net.URL;
 import java.util.*;
@@ -62,6 +64,9 @@ public class JSurferRenderPanel extends JComponent
     RotateSphericalDragger rsd;
     Matrix4d scale;
     RenderWorker rw;
+    
+    Controller controller;
+    LeapMotionListener lm;
 
     class RenderWorker extends Thread
     {
@@ -245,6 +250,9 @@ public class JSurferRenderPanel extends JComponent
          addComponentListener( ca );
          
          // add leapMotion listener
+         controller = new Controller();
+         lm = new LeapMotionListener(this);
+         controller.addListener(lm);
     }
     
     public JSurferRenderPanel(Properties properties) throws Exception
@@ -261,6 +269,7 @@ public class JSurferRenderPanel extends JComponent
     	scale = new Matrix4d();
     	scale.setIdentity();
         loadFromProperties(properties);
+        
         configure();
 
         setDoubleBuffered( true );
@@ -509,7 +518,7 @@ public class JSurferRenderPanel extends JComponent
         tmp.setScale( ( float ) Math.pow( 1.0625, units ) );
         scale.mul( tmp );*/
 
-        this.setScale(this.getScale()-units/50.0 );
+        this.setScale(this.getScale()-units/500.0 );
         //this.setScale(0);
         scheduleSurfaceRepaint();
     }
@@ -534,32 +543,6 @@ public class JSurferRenderPanel extends JComponent
             throws Exception
     {
     	FileFormat.load(props, asr);
-//        asr.setSurfaceFamily( props.getProperty( "surface_equation" ) );
-//
-//        Set< Map.Entry< Object, Object > > entries = props.entrySet();
-//        String parameter_prefix = "surface_parameter_";
-//        for( Map.Entry< Object, Object > entry : entries )
-//        {
-//            String name = (String) entry.getKey();
-//            if( name.startsWith( parameter_prefix ) )
-//            {
-//                String parameterName = name.substring( parameter_prefix.length() );
-//                asr.setParameterValue( parameterName, Float.parseFloat( ( String ) entry.getValue() ) );
-//                System.out.println("LoadRenderPar: " + parameterName + "=" + entry.getValue() + " (" + Float.parseFloat( (String) entry.getValue()) + ") "+ asr.getParameterValue( parameterName));
-//            }
-//        }
-//
-//        asr.getCamera().loadProperties( props, "camera_", "" );
-//        asr.getFrontMaterial().loadProperties(props, "front_material_", "");
-//        asr.getBackMaterial().loadProperties(props, "back_material_", "");
-//        for( int i = 0; i < AlgebraicSurfaceRenderer.MAX_LIGHTS; i++ )
-//        {
-//            asr.getLightSource( i ).setStatus(LightSource.Status.OFF);
-//            asr.getLightSource( i ).loadProperties( props, "light_", "_" + i );
-//        }
-//        asr.setBackgroundColor( BasicIO.fromColor3fString( props.getProperty( "background_color" ) ) );
-//        this.setScale( Float.parseFloat( props.getProperty( "scale_factor" ) ) );
-//        rsd.setRotation( BasicIO.fromMatrix4dString( props.getProperty( "rotation_matrix" ) ) );
     }
 
     public void saveToFile( URL url )
