@@ -20,6 +20,7 @@ dependencies {
     compile group: 'javax', name: 'vecmath', version: '1.5.2'
     compile 'org.antlr:antlr-runtime:3.4@jar'
     compile 'commons-cli:commons-cli:1.2'
+    compile files('lib/leapMotion/leapJava.jar')
 }
 
 task wrapper(type: Wrapper) {
@@ -39,3 +40,34 @@ uploadArchives {
 }
 
 mainClassName = "de.mfo.jsurf.Main"
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+distZip {
+	folderName = archiveName.replace("." + extension, "")
+    into(folderName) {
+    	from '.'
+        include 'lib/leapMotion/*'
+    }
+}
+
+startScripts {
+    doLast {
+        unixScript.text = unixScript.text.replace('DEFAULT_JVM_OPTS=""', 'DEFAULT_JVM_OPTS="-Djava.library.path=../lib/leapMotion"')
+    }
+}
+
+run {
+	//jvmArgs needed to run leapMotion library
+	jvmArgs '-Djava.library.path=lib/leapMotion'
+   if ( project.hasProperty('args') ) {
+       args project.args.split('\\s+')
+   }
+}
+
+
+
